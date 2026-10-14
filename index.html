@@ -1,105 +1,304 @@
 <!doctype html>
 <html lang="de">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#07070f">
-  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./assets/style.css">
-  <!-- Spielspezifische Styles (Brett, Zellen, Notizen, Ziffernleiste) -->
-  <link rel="stylesheet" href="./spiel.css">
-  <title>Sudoku · Browser-Arcade</title>
-  <meta name="description" content="Sudoku im Browser: Frisch erzeugte Rätsel mit garantiert einer Lösung, drei Schwierigkeitsstufen, Notiz-Modus und Bestzeit pro Stufe.">
-</head>
-<body style="--ak:var(--cyan)">
-  <div class="raster" aria-hidden="true"></div>
-  <a class="skip-link" href="#main">Zum Inhalt springen</a>
-  <header class="kopf"><nav class="container nav" aria-label="Hauptnavigation">
-    <a class="marke" href="./"><span class="logo">▶</span>GAMES</a>
-    <div class="nav-links"><a href="./impressum.html">Impressum</a><a href="./datenschutz.html">Datenschutz</a></div>
-  </nav></header>
-  <main id="main" class="container">
-    <div class="spiel-kopf">
-      <div><h1>SUDOKU</h1><p class="unterzeile">Fülle das Brett so, dass jede Ziffer in jeder Zeile, Spalte und jedem Block genau einmal steht.</p></div>
-      <button type="button" class="knopf primaer" id="neues-spiel">Neues Spiel</button>
-    </div>
-    <div class="hud">
-      <div class="hud-feld"><div class="label">Leere Felder</div><div class="wert" id="hud-leer">--</div></div>
-      <div class="hud-feld"><div class="label">Zeit</div><div class="wert" id="hud-zeit">00:00</div></div>
-      <div class="hud-feld"><div class="label">Bestzeit</div><div class="wert" id="hud-best">--:--</div></div>
-    </div>
-
-    <!-- Schwierigkeit wählen: aria-pressed zeigt Screenreadern, welcher Knopf aktiv ist -->
-    <div class="stufen-leiste" role="group" aria-label="Schwierigkeit">
-      <button type="button" class="knopf" data-stufe="leicht" aria-pressed="true">Leicht <small>ca. 40 Vorgaben</small></button>
-      <button type="button" class="knopf" data-stufe="mittel" aria-pressed="false">Mittel <small>ca. 32 Vorgaben</small></button>
-      <button type="button" class="knopf" data-stufe="schwer" aria-pressed="false">Schwer <small>ca. 26 Vorgaben</small></button>
-    </div>
-
-    <div class="buehne">
-      <div class="brett-huelle">
-        <!-- Das Brett: game.js baut hier 81 Zellen (Buttons) ein -->
-        <div class="brett" id="brett" role="group" aria-label="Sudoku-Brett"></div>
-        <!-- Wird nur gezeigt, solange ein Rätsel erzeugt wird -->
-        <div class="erzeugung" id="erzeugung" hidden><span>Erzeuge Rätsel…</span></div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#07070f" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./assets/style.css" />
+    <!-- Spielspezifische Styles (Brett, Zellen, Notizen, Ziffernleiste) -->
+    <link rel="stylesheet" href="./spiel.css" />
+    <title>Sudoku · Browser-Arcade</title>
+    <meta
+      name="description"
+      content="Sudoku im Browser: Frisch erzeugte Rätsel mit garantiert einer Lösung, drei Schwierigkeitsstufen, Notiz-Modus und Bestzeit pro Stufe."
+    />
+  </head>
+  <body style="--ak: var(--cyan)">
+    <div class="raster" aria-hidden="true"></div>
+    <a class="skip-link" href="#main">Zum Inhalt springen</a>
+    <header class="kopf">
+      <nav class="container nav" aria-label="Hauptnavigation">
+        <a class="marke" href="./"><span class="logo">▶</span>GAMES</a>
+        <div class="nav-links">
+          <a href="./impressum.html">Impressum</a><a href="./datenschutz.html">Datenschutz</a>
+        </div>
+      </nav>
+    </header>
+    <main id="main" class="container">
+      <div class="spiel-kopf">
+        <div>
+          <h1>SUDOKU</h1>
+          <p class="unterzeile">
+            Fülle das Brett so, dass jede Ziffer in jeder Zeile, Spalte und jedem Block genau einmal
+            steht.
+          </p>
+        </div>
+        <button type="button" class="knopf primaer" id="neues-spiel">Neues Spiel</button>
+      </div>
+      <div class="hud">
+        <div class="hud-feld">
+          <div class="label">Leere Felder</div>
+          <div class="wert" id="hud-leer">--</div>
+        </div>
+        <div class="hud-feld">
+          <div class="label">Zeit</div>
+          <div class="wert" id="hud-zeit">00:00</div>
+        </div>
+        <div class="hud-feld">
+          <div class="label">Bestzeit</div>
+          <div class="wert" id="hud-best">--:--</div>
+        </div>
       </div>
 
-      <!-- Ziffernleiste für Touch: 1–9 (von game.js eingefügt) + Radiergummi -->
-      <div class="ziffern" id="ziffern" role="group" aria-label="Ziffern eintragen">
-        <button type="button" class="ziffer radierer" id="radierer" aria-label="Feld leeren (Radiergummi)">
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5 21 8l-9.5 9.5L7 13z"/><path d="M7 13 3.5 16.5a2 2 0 0 0 0 2.8l1.2 1.2H11l4.5-4.5"/><path d="M13 21h8"/></svg>
+      <!-- Schwierigkeit wählen: aria-pressed zeigt Screenreadern, welcher Knopf aktiv ist -->
+      <div class="stufen-leiste" role="group" aria-label="Schwierigkeit">
+        <button type="button" class="knopf" data-stufe="leicht" aria-pressed="true">
+          Leicht <small>ca. 40 Vorgaben</small>
+        </button>
+        <button type="button" class="knopf" data-stufe="mittel" aria-pressed="false">
+          Mittel <small>ca. 32 Vorgaben</small>
+        </button>
+        <button type="button" class="knopf" data-stufe="schwer" aria-pressed="false">
+          Schwer <small>ca. 26 Vorgaben</small>
         </button>
       </div>
 
-      <div class="werkzeuge">
-        <button type="button" class="knopf" id="notiz-modus" aria-pressed="false">Notizen <small>(N)</small></button>
-        <label class="schalter"><input type="checkbox" id="fehler-sofort"><span>Fehler sofort zeigen</span></label>
+      <div class="buehne">
+        <div class="brett-huelle">
+          <!-- Das Brett: game.js baut hier 81 Zellen (Buttons) ein -->
+          <div class="brett" id="brett" role="group" aria-label="Sudoku-Brett"></div>
+          <!-- Wird nur gezeigt, solange ein Rätsel erzeugt wird -->
+          <div class="erzeugung" id="erzeugung" hidden><span>Erzeuge Rätsel…</span></div>
+        </div>
+
+        <!-- Ziffernleiste für Touch: 1–9 (von game.js eingefügt) + Radiergummi -->
+        <div class="ziffern" id="ziffern" role="group" aria-label="Ziffern eintragen">
+          <button
+            type="button"
+            class="ziffer radierer"
+            id="radierer"
+            aria-label="Feld leeren (Radiergummi)"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="22"
+              height="22"
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M16.5 3.5 21 8l-9.5 9.5L7 13z" />
+              <path d="M7 13 3.5 16.5a2 2 0 0 0 0 2.8l1.2 1.2H11l4.5-4.5" />
+              <path d="M13 21h8" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="werkzeuge">
+          <button type="button" class="knopf" id="notiz-modus" aria-pressed="false">
+            Notizen <small>(N)</small>
+          </button>
+          <label class="schalter"
+            ><input type="checkbox" id="fehler-sofort" /><span>Fehler sofort zeigen</span></label
+          >
+        </div>
       </div>
-    </div>
-    <!-- Unsichtbare Live-Region: Screenreader hören hier Meldungen -->
-    <p class="sr-only" id="status" role="status" aria-live="polite"></p>
+      <!-- Unsichtbare Live-Region: Screenreader hören hier Meldungen -->
+      <p class="sr-only" id="status" role="status" aria-live="polite"></p>
 
-    <p class="steuerung">
-      Maus/Touch: Feld antippen, dann eine Ziffer aus der Leiste unter dem Brett wählen; der Radiergummi leert das Feld.
-      Tastatur: <kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> wählen ein Feld, <kbd>1</kbd>–<kbd>9</kbd> tragen eine Ziffer ein,
-      <kbd>Entf</kbd>, <kbd>Rück</kbd> oder <kbd>0</kbd> leeren das Feld, <kbd>N</kbd> schaltet den Notiz-Modus um.
-    </p>
+      <p class="steuerung">
+        Maus/Touch: Feld antippen, dann eine Ziffer aus der Leiste unter dem Brett wählen; der
+        Radiergummi leert das Feld. Tastatur: <kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd>
+        <kbd>↓</kbd> wählen ein Feld, <kbd>1</kbd>–<kbd>9</kbd> tragen eine Ziffer ein,
+        <kbd>Entf</kbd>, <kbd>Rück</kbd> oder <kbd>0</kbd> leeren das Feld, <kbd>N</kbd> schaltet
+        den Notiz-Modus um.
+      </p>
 
-    <section style="max-width:420px;margin-top:36px"><h2 id="topliste-titel" style="font-family:var(--pixel);font-weight:400;font-size:.85rem">Lokale Top 3</h2><div id="topliste"></div>
-      <button class="knopf" id="reset" style="margin-top:10px">Spielstand zurücksetzen</button></section>
+      <section style="max-width: 420px; margin-top: 36px">
+        <h2
+          id="topliste-titel"
+          style="font-family: var(--pixel); font-weight: 400; font-size: 0.85rem"
+        >
+          Lokale Top 3
+        </h2>
+        <div id="topliste"></div>
+        <button class="knopf" id="reset" style="margin-top: 10px">Spielstand zurücksetzen</button>
+      </section>
 
-    <section class="lernbox"><details open><summary>Anleitung &amp; Regeln</summary>
-      <p><strong>Ziel:</strong> Fülle alle leeren Felder mit den Ziffern 1 bis 9 – so schnell wie möglich.</p>
-      <ul>
-        <li>In jeder <strong>Zeile</strong>, jeder <strong>Spalte</strong> und jedem der neun <strong>3×3-Blöcke</strong> (die Kästen mit dicker Umrandung) muss jede Ziffer genau einmal vorkommen.</li>
-        <li>Die helleren Zahlen sind <strong>Vorgaben</strong> und lassen sich nicht ändern. Jedes Rätsel hat genau <strong>eine</strong> Lösung, du musst also nie raten: Es gibt immer einen logischen Weg.</li>
-        <li><strong>Notizen:</strong> Mit dem Notiz-Modus (Knopf oder Taste <kbd>N</kbd>) trägst du kleine Kandidaten ein, also Ziffern, die in einem Feld noch möglich sind. Setzt du später eine echte Zahl, werden ihre Notizen in Zeile, Spalte und Block automatisch gelöscht.</li>
-        <li>Unter jeder Ziffer in der Leiste steht, <strong>wie oft sie noch fehlt</strong> (neun minus die schon gesetzten). Steht dort 0, ist die Ziffer überall untergebracht.</li>
-        <li><strong>Rote Zahlen</strong> zeigen eine Regelverletzung: dieselbe Ziffer steht doppelt in einer Zeile, Spalte oder einem Block. Das sagt nur, dass sich zwei Zahlen widersprechen, nicht, welche von beiden falsch ist. Eine falsche Zahl, die noch zu keiner anderen passt, bleibt unauffällig.</li>
-        <li>Mit <strong>„Fehler sofort zeigen“</strong> wird jede Zahl zusätzlich mit der Lösung verglichen und bei Abweichung markiert. Das ist bequemer, aber auch ein Spoiler. Der Schalter ist standardmäßig aus und wird gemerkt.</li>
-        <li>Die Uhr läuft ab dem fertigen Rätsel und pausiert, wenn du den Tab wechselst. Dein Stand wird nach jedem Zug gespeichert, pro Stufe getrennt: Beim nächsten Besuch (oder beim Zurückwechseln der Stufe) geht es dort weiter. Die Bestzeit zählt pro Stufe.</li>
-      </ul>
-    </details></section>
+      <section class="lernbox">
+        <details open>
+          <summary>Anleitung &amp; Regeln</summary>
+          <p>
+            <strong>Ziel:</strong> Fülle alle leeren Felder mit den Ziffern 1 bis 9 – so schnell wie
+            möglich.
+          </p>
+          <ul>
+            <li>
+              In jeder <strong>Zeile</strong>, jeder <strong>Spalte</strong> und jedem der neun
+              <strong>3×3-Blöcke</strong> (die Kästen mit dicker Umrandung) muss jede Ziffer genau
+              einmal vorkommen.
+            </li>
+            <li>
+              Die helleren Zahlen sind <strong>Vorgaben</strong> und lassen sich nicht ändern. Jedes
+              Rätsel hat genau <strong>eine</strong> Lösung, du musst also nie raten: Es gibt immer
+              einen logischen Weg.
+            </li>
+            <li>
+              <strong>Notizen:</strong> Mit dem Notiz-Modus (Knopf oder Taste <kbd>N</kbd>) trägst
+              du kleine Kandidaten ein, also Ziffern, die in einem Feld noch möglich sind. Setzt du
+              später eine echte Zahl, werden ihre Notizen in Zeile, Spalte und Block automatisch
+              gelöscht.
+            </li>
+            <li>
+              Unter jeder Ziffer in der Leiste steht, <strong>wie oft sie noch fehlt</strong> (neun
+              minus die schon gesetzten). Steht dort 0, ist die Ziffer überall untergebracht.
+            </li>
+            <li>
+              <strong>Rote Zahlen</strong> zeigen eine Regelverletzung: dieselbe Ziffer steht
+              doppelt in einer Zeile, Spalte oder einem Block. Das sagt nur, dass sich zwei Zahlen
+              widersprechen, nicht, welche von beiden falsch ist. Eine falsche Zahl, die noch zu
+              keiner anderen passt, bleibt unauffällig.
+            </li>
+            <li>
+              Mit <strong>„Fehler sofort zeigen“</strong> wird jede Zahl zusätzlich mit der Lösung
+              verglichen und bei Abweichung markiert. Das ist bequemer, aber auch ein Spoiler. Der
+              Schalter ist standardmäßig aus und wird gemerkt.
+            </li>
+            <li>
+              Die Uhr läuft ab dem fertigen Rätsel und pausiert, wenn du den Tab wechselst. Dein
+              Stand wird nach jedem Zug gespeichert, pro Stufe getrennt: Beim nächsten Besuch (oder
+              beim Zurückwechseln der Stufe) geht es dort weiter. Die Bestzeit zählt pro Stufe.
+            </li>
+          </ul>
+        </details>
+      </section>
 
-    <section class="lernbox"><details><summary>Wie funktioniert der Code?</summary>
-      <ul>
-        <li><strong>Datenmodell:</strong> Das Brett ist nur eine Liste mit 81 Zahlen (<code>0</code> = leer). Aus Zeile <code>z</code> und Spalte <code>s</code> wird der Index <code>z * 9 + s</code>. Welche 20 Felder ein Feld „sieht“ (seine Zeile, Spalte und sein Block), rechnet das Spiel einmal vorab aus (<code>SICHTFELDER</code>), weil der Löser das Millionen Mal braucht.</li>
-        <li><strong>Bitmasken:</strong> Welche Ziffern in einer Zeile schon vergeben sind, steckt in <em>einer</em> Zahl: Bit <code>d-1</code> steht für die Ziffer <code>d</code>. Markieren ist <code>maske |= 1 &lt;&lt; (d-1)</code>, die Frage „was ist in Zeile, Spalte <em>und</em> Block noch frei?“ ist die Rechnung <code>ALLE &amp; ~(zeile | spalte | block)</code>. Dasselbe Prinzip steckt in den Notizen: pro Feld eine Maske der notierten Ziffern, und <code>^=</code> (XOR) kippt eine Notiz an oder aus.</li>
-        <li><strong>Der Löser (Backtracking):</strong> <code>suche</code> sucht ein leeres Feld, probiert dort eine erlaubte Ziffer und macht mit dem nächsten Feld weiter. Hat ein Feld keine erlaubte Ziffer mehr, war eine frühere Entscheidung falsch: Die Ziffer wird <em>zurückgenommen</em> („Backtracking“) und die nächste probiert. Als Trick wählt der Löser immer das Feld mit den <em>wenigsten</em> Kandidaten (MRV, „minimum remaining values“). Ein Feld mit nur einem Kandidaten ist erzwungen, eines mit null verrät eine Sackgasse sofort. So braucht selbst ein hartes Rätsel nur wenige Schritte. Die Rekursion ist hier sicher, denn es gibt höchstens 81 leere Felder, also höchstens 81 verschachtelte Aufrufe.</li>
-        <li><strong>Lösungen zählen:</strong> Statt bei der ersten Lösung aufzuhören, kann <code>suche</code> weitersuchen und mitzählen. <code>zaehleLoesungen</code> bricht bei 2 ab, denn für „ist die Lösung eindeutig?“ ist jede Zahl ab 2 gleich schlecht. Ergebnis 0 heißt unlösbar, 1 eindeutig, 2 mehrdeutig.</li>
-        <li><strong>Der Generator, Phase A:</strong> Der Löser bekommt ein <em>leeres</em> Brett und probiert die Ziffern in <em>zufälliger Reihenfolge</em> (Fisher-Yates-Mischen). Heraus kommt ein zufälliges, vollständig gültiges Sudoku (<code>zufaelligesVollesBrett</code>). Es ist zugleich die Lösung des späteren Rätsels.</li>
-        <li><strong>Der Generator, Phase B:</strong> <code>raetselAusVollemBrett</code> löscht Felder und fragt nach jedem Löschen den Lösungszähler, ob die Lösung noch eindeutig ist. Wenn nicht, kommt die Zahl zurück. Gelöscht wird in <em>Paaren</em> (Feld <code>i</code> und <code>80 - i</code>), das ergibt das punktsymmetrische Muster klassischer Rätsel. Die Stufe bestimmt nur, bei wie vielen Vorgaben Schluss ist (40, 32 oder 26). Ein einziger Durchgang durch die gemischten Paare genügt, denn was bei mehr Vorgaben die Eindeutigkeit zerstört hat, zerstört sie bei weniger erst recht. Gelingt es nicht, nah genug ans Ziel zu kommen, startet der Generator mit einem neuen vollen Brett (<code>erzeugeRaetsel</code>).</li>
-        <li><strong>Warum „Erzeuge Rätsel…“?</strong> JavaScript im Browser hat nur einen Faden. Solange er rechnet, kann die Seite nicht zeichnen. Darum zeigt <code>neuesSpiel</code> erst die Meldung, gibt dem Browser per <code>setTimeout</code> Zeit zum Zeichnen und rechnet dann in Häppchen: ein Generator-Versuch pro Durchgang. Wer währenddessen Stufe oder „Neues Spiel“ wählt, macht das alte Ergebnis über eine Zähler-Nummer ungültig.</li>
-        <li><strong>Konflikt ist nicht gleich falsch:</strong> <code>konflikteBerechnen</code> prüft nur die Regeln. Es markiert jede Ziffer, die in ihren Sichtfeldern ein zweites Mal vorkommt, und kennt die Lösung gar nicht. Eine falsche Zahl, die zu keiner anderen Zahl im Widerspruch steht, ist dadurch nicht erkennbar. Der Schalter „Fehler sofort zeigen“ vergleicht dagegen jede Zahl mit der gespeicherten Lösung. Der Sieg braucht keinen Vergleich: Ein vollständig gefülltes Brett ohne Konflikt <em>ist</em> die eindeutige Lösung.</li>
-        <li><strong>Notizen aufräumen:</strong> Eine Notiz heißt „diese Ziffer <em>könnte</em> hier stehen“. Wird die Ziffer in Zeile, Spalte oder Block gesetzt, stimmt das für die übrigen Felder dieser Einheiten nicht mehr. <code>notizenBereinigen</code> löscht darum das Bit der Ziffer bei allen 20 Sichtfeldern. Das erspart das mühsame Aufräumen von Hand.</li>
-        <li><strong>Immer alles neu zeichnen:</strong> Nach jeder Eingabe zeichnet <code>zeichne</code> alle 81 Zellen aus dem Zustand neu (Klassen für Auswahl, Zeile/Spalte/Block, gleiche Zahlen, Konflikt). Das ist bei 81 Zellen billig und hat einen großen Vorteil: Es gibt nur <em>eine</em> Stelle, die Anzeige und Daten abgleicht. Gebaut werden die Zellen nur einmal (<code>brettBauen</code>), die Werte kommen per <code>textContent</code> ins DOM, nie als HTML.</li>
-        <li><strong>Speichern mit Prüfung:</strong> Nach jedem Zug landen Brett, Notizen und Zeit im <code>localStorage</code>. Beim Laden prüft <code>spielstandPruefen</code> Form und Wertebereiche und löst die Vorgaben <em>neu</em>, statt einer gespeicherten Lösung zu vertrauen. So kann ein von Hand veränderter Spielstand das Spiel nicht durcheinanderbringen.</li>
-        <li><strong>Pausierende Uhr:</strong> Die Zeit ist eine Summe von Abschnitten. Wird der Tab verborgen (<code>visibilitychange</code>), schließt das Spiel den laufenden Abschnitt ab und startet beim Zurückkommen einen neuen. Gerechnet wird aus <code>performance.now()</code> statt „+1 pro Tick“, weil Browser Zeitgeber im Hintergrund drosseln.</li>
-        <li><strong>Feier-Welle:</strong> Beim Sieg bekommt jede Zelle per <code>style.setProperty("--v", …)</code> eine Verzögerung nach Abstand zum letzten Feld. Das CSS nutzt sie als <code>animation-delay</code>, und eine kurze Skalierungs-Animation läuft als Welle über das Brett. Bei „Bewegung reduzieren“ entfällt sie.</li>
-      </ul>
-    </details></section>
-  </main>
-  <footer class="fuss"><div class="container fuss-in"><span>Browser-Arcade · Open Source</span><nav aria-label="Rechtliches"><a href="./impressum.html">Impressum</a><a href="./datenschutz.html">Datenschutz</a></nav></div></footer>
-  <script type="module" src="./game.js"></script>
-</body>
+      <section class="lernbox">
+        <details>
+          <summary>Wie funktioniert der Code?</summary>
+          <ul>
+            <li>
+              <strong>Datenmodell:</strong> Das Brett ist nur eine Liste mit 81 Zahlen (<code
+                >0</code
+              >
+              = leer). Aus Zeile <code>z</code> und Spalte <code>s</code> wird der Index
+              <code>z * 9 + s</code>. Welche 20 Felder ein Feld „sieht“ (seine Zeile, Spalte und
+              sein Block), rechnet das Spiel einmal vorab aus (<code>SICHTFELDER</code>), weil der
+              Löser das Millionen Mal braucht.
+            </li>
+            <li>
+              <strong>Bitmasken:</strong> Welche Ziffern in einer Zeile schon vergeben sind, steckt
+              in <em>einer</em> Zahl: Bit <code>d-1</code> steht für die Ziffer <code>d</code>.
+              Markieren ist <code>maske |= 1 &lt;&lt; (d-1)</code>, die Frage „was ist in Zeile,
+              Spalte <em>und</em> Block noch frei?“ ist die Rechnung
+              <code>ALLE &amp; ~(zeile | spalte | block)</code>. Dasselbe Prinzip steckt in den
+              Notizen: pro Feld eine Maske der notierten Ziffern, und <code>^=</code> (XOR) kippt
+              eine Notiz an oder aus.
+            </li>
+            <li>
+              <strong>Der Löser (Backtracking):</strong> <code>suche</code> sucht ein leeres Feld,
+              probiert dort eine erlaubte Ziffer und macht mit dem nächsten Feld weiter. Hat ein
+              Feld keine erlaubte Ziffer mehr, war eine frühere Entscheidung falsch: Die Ziffer wird
+              <em>zurückgenommen</em> („Backtracking“) und die nächste probiert. Als Trick wählt der
+              Löser immer das Feld mit den <em>wenigsten</em> Kandidaten (MRV, „minimum remaining
+              values“). Ein Feld mit nur einem Kandidaten ist erzwungen, eines mit null verrät eine
+              Sackgasse sofort. So braucht selbst ein hartes Rätsel nur wenige Schritte. Die
+              Rekursion ist hier sicher, denn es gibt höchstens 81 leere Felder, also höchstens 81
+              verschachtelte Aufrufe.
+            </li>
+            <li>
+              <strong>Lösungen zählen:</strong> Statt bei der ersten Lösung aufzuhören, kann
+              <code>suche</code> weitersuchen und mitzählen. <code>zaehleLoesungen</code> bricht bei
+              2 ab, denn für „ist die Lösung eindeutig?“ ist jede Zahl ab 2 gleich schlecht.
+              Ergebnis 0 heißt unlösbar, 1 eindeutig, 2 mehrdeutig.
+            </li>
+            <li>
+              <strong>Der Generator, Phase A:</strong> Der Löser bekommt ein <em>leeres</em> Brett
+              und probiert die Ziffern in <em>zufälliger Reihenfolge</em> (Fisher-Yates-Mischen).
+              Heraus kommt ein zufälliges, vollständig gültiges Sudoku
+              (<code>zufaelligesVollesBrett</code>). Es ist zugleich die Lösung des späteren
+              Rätsels.
+            </li>
+            <li>
+              <strong>Der Generator, Phase B:</strong> <code>raetselAusVollemBrett</code> löscht
+              Felder und fragt nach jedem Löschen den Lösungszähler, ob die Lösung noch eindeutig
+              ist. Wenn nicht, kommt die Zahl zurück. Gelöscht wird in <em>Paaren</em> (Feld
+              <code>i</code> und <code>80 - i</code>), das ergibt das punktsymmetrische Muster
+              klassischer Rätsel. Die Stufe bestimmt nur, bei wie vielen Vorgaben Schluss ist (40,
+              32 oder 26). Ein einziger Durchgang durch die gemischten Paare genügt, denn was bei
+              mehr Vorgaben die Eindeutigkeit zerstört hat, zerstört sie bei weniger erst recht.
+              Gelingt es nicht, nah genug ans Ziel zu kommen, startet der Generator mit einem neuen
+              vollen Brett (<code>erzeugeRaetsel</code>).
+            </li>
+            <li>
+              <strong>Warum „Erzeuge Rätsel…“?</strong> JavaScript im Browser hat nur einen Faden.
+              Solange er rechnet, kann die Seite nicht zeichnen. Darum zeigt
+              <code>neuesSpiel</code> erst die Meldung, gibt dem Browser per
+              <code>setTimeout</code> Zeit zum Zeichnen und rechnet dann in Häppchen: ein
+              Generator-Versuch pro Durchgang. Wer währenddessen Stufe oder „Neues Spiel“ wählt,
+              macht das alte Ergebnis über eine Zähler-Nummer ungültig.
+            </li>
+            <li>
+              <strong>Konflikt ist nicht gleich falsch:</strong>
+              <code>konflikteBerechnen</code> prüft nur die Regeln. Es markiert jede Ziffer, die in
+              ihren Sichtfeldern ein zweites Mal vorkommt, und kennt die Lösung gar nicht. Eine
+              falsche Zahl, die zu keiner anderen Zahl im Widerspruch steht, ist dadurch nicht
+              erkennbar. Der Schalter „Fehler sofort zeigen“ vergleicht dagegen jede Zahl mit der
+              gespeicherten Lösung. Der Sieg braucht keinen Vergleich: Ein vollständig gefülltes
+              Brett ohne Konflikt <em>ist</em> die eindeutige Lösung.
+            </li>
+            <li>
+              <strong>Notizen aufräumen:</strong> Eine Notiz heißt „diese Ziffer
+              <em>könnte</em> hier stehen“. Wird die Ziffer in Zeile, Spalte oder Block gesetzt,
+              stimmt das für die übrigen Felder dieser Einheiten nicht mehr.
+              <code>notizenBereinigen</code> löscht darum das Bit der Ziffer bei allen 20
+              Sichtfeldern. Das erspart das mühsame Aufräumen von Hand.
+            </li>
+            <li>
+              <strong>Immer alles neu zeichnen:</strong> Nach jeder Eingabe zeichnet
+              <code>zeichne</code> alle 81 Zellen aus dem Zustand neu (Klassen für Auswahl,
+              Zeile/Spalte/Block, gleiche Zahlen, Konflikt). Das ist bei 81 Zellen billig und hat
+              einen großen Vorteil: Es gibt nur <em>eine</em> Stelle, die Anzeige und Daten
+              abgleicht. Gebaut werden die Zellen nur einmal (<code>brettBauen</code>), die Werte
+              kommen per <code>textContent</code> ins DOM, nie als HTML.
+            </li>
+            <li>
+              <strong>Speichern mit Prüfung:</strong> Nach jedem Zug landen Brett, Notizen und Zeit
+              im <code>localStorage</code>. Beim Laden prüft <code>spielstandPruefen</code> Form und
+              Wertebereiche und löst die Vorgaben <em>neu</em>, statt einer gespeicherten Lösung zu
+              vertrauen. So kann ein von Hand veränderter Spielstand das Spiel nicht
+              durcheinanderbringen.
+            </li>
+            <li>
+              <strong>Pausierende Uhr:</strong> Die Zeit ist eine Summe von Abschnitten. Wird der
+              Tab verborgen (<code>visibilitychange</code>), schließt das Spiel den laufenden
+              Abschnitt ab und startet beim Zurückkommen einen neuen. Gerechnet wird aus
+              <code>performance.now()</code> statt „+1 pro Tick“, weil Browser Zeitgeber im
+              Hintergrund drosseln.
+            </li>
+            <li>
+              <strong>Feier-Welle:</strong> Beim Sieg bekommt jede Zelle per
+              <code>style.setProperty("--v", …)</code> eine Verzögerung nach Abstand zum letzten
+              Feld. Das CSS nutzt sie als <code>animation-delay</code>, und eine kurze
+              Skalierungs-Animation läuft als Welle über das Brett. Bei „Bewegung reduzieren“
+              entfällt sie.
+            </li>
+          </ul>
+        </details>
+      </section>
+    </main>
+    <footer class="fuss">
+      <div class="container fuss-in">
+        <span>Browser-Arcade · Open Source</span>
+        <nav aria-label="Rechtliches">
+          <a href="./impressum.html">Impressum</a><a href="./datenschutz.html">Datenschutz</a>
+        </nav>
+      </div>
+    </footer>
+    <script type="module" src="./game.js"></script>
+  </body>
 </html>

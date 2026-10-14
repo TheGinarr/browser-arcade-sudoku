@@ -15,26 +15,67 @@
    ============================================================ */
 
 /* Für Bildschirmleser sichtbar, für Augen unsichtbar (Live-Region) */
-.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 /* ---------- Stufen-Leiste (wie beim Minesweeper) --------------- */
-.stufen-leiste{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 14px}
-.stufen-leiste .knopf{padding:9px 16px;line-height:1.25;text-align:left}
-.stufen-leiste .knopf small{display:block;margin-top:2px;font-weight:400;font-size:.72rem;color:var(--mut)}
-.stufen-leiste .knopf[aria-pressed="true"]{
-  border-color:var(--ak);color:var(--ak);
-  box-shadow:0 0 16px color-mix(in srgb,var(--ak) 30%,transparent);
+.stufen-leiste {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
 }
-.stufen-leiste .knopf[aria-pressed="true"] small{color:inherit;opacity:.8}
+.stufen-leiste .knopf {
+  padding: 9px 16px;
+  line-height: 1.25;
+  text-align: left;
+}
+.stufen-leiste .knopf small {
+  display: block;
+  margin-top: 2px;
+  font-weight: 400;
+  font-size: 0.72rem;
+  color: var(--mut);
+}
+.stufen-leiste .knopf[aria-pressed="true"] {
+  border-color: var(--ak);
+  color: var(--ak);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--ak) 30%, transparent);
+}
+.stufen-leiste .knopf[aria-pressed="true"] small {
+  color: inherit;
+  opacity: 0.8;
+}
 
 /* Zweiter Klick nötig ("Wirklich neu?"): warnfarben statt Akzent */
-.knopf.warnung{border-color:var(--pink);color:var(--pink);box-shadow:0 0 16px color-mix(in srgb,var(--pink) 30%,transparent)}
-.knopf.primaer.warnung{background:var(--pink);color:#05050c;border:0}
+.knopf.warnung {
+  border-color: var(--pink);
+  color: var(--pink);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--pink) 30%, transparent);
+}
+.knopf.primaer.warnung {
+  background: var(--pink);
+  color: #05050c;
+  border: 0;
+}
 
 /* ---------- Bühne --------------------------------------------- */
-.buehne{
-  --brett:min(100%,520px);          /* Kantenlänge von Brett und Bedienleisten */
-  display:flex;flex-direction:column;align-items:center;gap:14px;
+.buehne {
+  --brett: min(100%, 520px); /* Kantenlänge von Brett und Bedienleisten */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
 }
 
 /* ---------- Das Brett als CSS-Grid ----------------------------
@@ -42,155 +83,362 @@
    quadratisch, egal wie breit der Bildschirm ist. container-type macht
    das Brett zum "Container": Die Einheit cqw (1 % der Containerbreite)
    erlaubt, die Schriftgröße direkt an die Brettbreite zu koppeln. */
-.brett-huelle{position:relative;width:var(--brett)}
-.brett{
-  width:100%;aspect-ratio:1;container-type:inline-size;
-  display:grid;grid-template-columns:repeat(9,1fr);grid-template-rows:repeat(9,1fr);
-  --blocklinie:color-mix(in srgb,var(--ak) 55%,#2b2b52);
-  border:3px solid var(--blocklinie);border-radius:10px;overflow:hidden;
-  background:#0b0b19;
+.brett-huelle {
+  position: relative;
+  width: var(--brett);
+}
+.brett {
+  width: 100%;
+  aspect-ratio: 1;
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  --blocklinie: color-mix(in srgb, var(--ak) 55%, #2b2b52);
+  border: 3px solid var(--blocklinie);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0b0b19;
   /* Beim Spielen soll nichts markiert werden und kein iOS-Menü aufpoppen */
-  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* ---------- Eine Zelle (ein <button>) -------------------------
    Dünne Linien zwischen Zellen: inset-box-shadow (zeichnet 1px innen).
    Dicke Linien zwischen den 3×3-Blöcken: .block-rechts / .block-unten
    (von game.js an Spalte 3/6 bzw. Zeile 3/6 gesetzt) bekommen einen 3px-Rand. */
-.zelle{
-  position:relative;margin:0;padding:0;border:0;border-radius:0;min-width:0;min-height:0;
-  display:grid;place-items:center;
-  font-family:var(--sans);font-weight:600;
-  font-size:clamp(16px,6vw,30px);                       /* Fallback für alte Browser */
-  font-size:calc(100cqw / 9 * .56);
-  color:var(--ak);                                      /* eigene Zahlen in Akzentfarbe */
-  background-color:#0d0d1f;
-  box-shadow:inset 0 0 0 1px #23234a;
-  cursor:pointer;
-  touch-action:manipulation;                            /* kein Doppeltipp-Zoom */
-  -webkit-tap-highlight-color:transparent;
-  transition:background-color .15s ease,color .15s ease,box-shadow .15s ease;
+.zelle {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: clamp(16px, 6vw, 30px); /* Fallback für alte Browser */
+  font-size: calc(100cqw / 9 * 0.56);
+  color: var(--ak); /* eigene Zahlen in Akzentfarbe */
+  background-color: #0d0d1f;
+  box-shadow: inset 0 0 0 1px #23234a;
+  cursor: pointer;
+  touch-action: manipulation; /* kein Doppeltipp-Zoom */
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
 }
-.zelle.block-rechts{border-right:3px solid var(--blocklinie)}
-.zelle.block-unten{border-bottom:3px solid var(--blocklinie)}
-.zelle:focus-visible{outline:2px solid #fff;outline-offset:-4px;z-index:1}
+.zelle.block-rechts {
+  border-right: 3px solid var(--blocklinie);
+}
+.zelle.block-unten {
+  border-bottom: 3px solid var(--blocklinie);
+}
+.zelle:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -4px;
+  z-index: 1;
+}
 
 /* Vorgabe: heller Untergrund, helle fette Zahl */
-.zelle.vorgabe{
-  background-color:#1d1d42;color:var(--txt);font-weight:700;cursor:default;
+.zelle.vorgabe {
+  background-color: #1d1d42;
+  color: var(--txt);
+  font-weight: 700;
+  cursor: default;
 }
 
 /* Hervorhebungen, von schwach nach stark. Spätere Regeln überschreiben
    frühere (gleiche Wertigkeit): Bereich < gleiche Zahl < Auswahl. */
-.zelle.bereich{background-color:#14142f}
-.zelle.vorgabe.bereich{background-color:#222249}
-.zelle.gleich{background-color:color-mix(in srgb,var(--ak) 24%,#0d0d1f)}
-.zelle.vorgabe.gleich{background-color:color-mix(in srgb,var(--ak) 28%,#1d1d42)}
-.zelle.auswahl{
-  background-color:color-mix(in srgb,var(--ak) 34%,#0d0d1f);
-  box-shadow:inset 0 0 0 2px var(--ak);
+.zelle.bereich {
+  background-color: #14142f;
 }
-.zelle.vorgabe.auswahl{background-color:color-mix(in srgb,var(--ak) 38%,#1d1d42)}
+.zelle.vorgabe.bereich {
+  background-color: #222249;
+}
+.zelle.gleich {
+  background-color: color-mix(in srgb, var(--ak) 24%, #0d0d1f);
+}
+.zelle.vorgabe.gleich {
+  background-color: color-mix(in srgb, var(--ak) 28%, #1d1d42);
+}
+.zelle.auswahl {
+  background-color: color-mix(in srgb, var(--ak) 34%, #0d0d1f);
+  box-shadow: inset 0 0 0 2px var(--ak);
+}
+.zelle.vorgabe.auswahl {
+  background-color: color-mix(in srgb, var(--ak) 38%, #1d1d42);
+}
 
 /* Konflikt: rote Zahl + rötlicher Grund (Regelverletzung).
    Falsch: rote Zahl + rosa Unterstrich (Abweichung von der Lösung). */
-.zelle.konflikt{color:#ff5d7e;background-color:#3a0f20}
-.zelle.konflikt.auswahl{background-color:#55142c;box-shadow:inset 0 0 0 2px #ff5d7e}
-.zelle.falsch{color:#ff5d7e;box-shadow:inset 0 -4px 0 -1px var(--pink),inset 0 0 0 1px #23234a}
-.zelle.falsch.auswahl{box-shadow:inset 0 -4px 0 -1px var(--pink),inset 0 0 0 2px var(--ak)}
+.zelle.konflikt {
+  color: #ff5d7e;
+  background-color: #3a0f20;
+}
+.zelle.konflikt.auswahl {
+  background-color: #55142c;
+  box-shadow: inset 0 0 0 2px #ff5d7e;
+}
+.zelle.falsch {
+  color: #ff5d7e;
+  box-shadow:
+    inset 0 -4px 0 -1px var(--pink),
+    inset 0 0 0 1px #23234a;
+}
+.zelle.falsch.auswahl {
+  box-shadow:
+    inset 0 -4px 0 -1px var(--pink),
+    inset 0 0 0 2px var(--ak);
+}
 
-.zahl{pointer-events:none;line-height:1}
+.zahl {
+  pointer-events: none;
+  line-height: 1;
+}
 
 /* ---------- Notizen: 3×3-Mini-Raster in der Zelle -------------
    Jede Ziffer hat im Raster einen festen Platz (1 oben links … 9 unten
    rechts). Die <i>-Elemente sind immer da, nur ihr Text wechselt. */
-.notizen{
-  position:absolute;inset:3px;pointer-events:none;
-  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
-  font-family:var(--mono);font-weight:400;
-  font-size:9px;font-size:max(7px,calc(100cqw / 9 * .22));
-  line-height:1;color:var(--mut);
+.notizen {
+  position: absolute;
+  inset: 3px;
+  pointer-events: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  font-family: var(--mono);
+  font-weight: 400;
+  font-size: 9px;
+  font-size: max(7px, calc(100cqw / 9 * 0.22));
+  line-height: 1;
+  color: var(--mut);
 }
-.notizen i{display:grid;place-items:center;font-style:normal;transition:color .15s ease}
+.notizen i {
+  display: grid;
+  place-items: center;
+  font-style: normal;
+  transition: color 0.15s ease;
+}
 /* Notiz, die zur gewählten Zahl passt: leuchtet auf */
-.notizen i.treffer{color:var(--ak);font-weight:700;text-shadow:0 0 6px color-mix(in srgb,var(--ak) 60%,transparent)}
+.notizen i.treffer {
+  color: var(--ak);
+  font-weight: 700;
+  text-shadow: 0 0 6px color-mix(in srgb, var(--ak) 60%, transparent);
+}
 
 /* ---------- Erzeugungs-Anzeige ---------------------------------
    Erscheint erst nach 0,2 s: Dauert die Erzeugung nur Millisekunden,
    soll nichts aufflackern. (Das [hidden]-Attribut würde sonst von
    display:grid überstimmt, darum die eigene Regel darunter.) */
-.erzeugung{
-  position:absolute;inset:0;display:grid;place-items:center;border-radius:10px;
-  background:#07070fe6;font-family:var(--pixel);font-size:.72rem;color:var(--ak);
-  animation:erzeugung-rein .25s ease .2s backwards;
+.erzeugung {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #07070fe6;
+  font-family: var(--pixel);
+  font-size: 0.72rem;
+  color: var(--ak);
+  animation: erzeugung-rein 0.25s ease 0.2s backwards;
 }
-.erzeugung[hidden]{display:none}
-.erzeugung span{animation:erzeugung-puls 1.1s ease-in-out infinite}
-@keyframes erzeugung-rein{from{opacity:0}to{opacity:1}}
-@keyframes erzeugung-puls{50%{opacity:.45}}
+.erzeugung[hidden] {
+  display: none;
+}
+.erzeugung span {
+  animation: erzeugung-puls 1.1s ease-in-out infinite;
+}
+@keyframes erzeugung-rein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes erzeugung-puls {
+  50% {
+    opacity: 0.45;
+  }
+}
 
 /* ---------- Ziffernleiste (Touch) -------------------------------
    10 Knöpfe: 9 Ziffern + Radiergummi. Auf Handys 5 pro Zeile, damit
    jeder Knopf gut mit dem Daumen zu treffen ist (≥ 44 px). */
-.ziffern{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;width:var(--brett)}
-.ziffer{
-  position:relative;display:grid;place-items:center;min-height:52px;padding:0;
-  font:600 1.3rem var(--sans);color:var(--txt);cursor:pointer;
-  background:var(--panel2);border:1px solid var(--line);border-radius:10px;
-  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
-  transition:transform var(--schnell),border-color var(--schnell),opacity var(--schnell);
+.ziffern {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 6px;
+  width: var(--brett);
 }
-.ziffer:hover:not(:disabled){border-color:var(--ak)}
-.ziffer:active:not(:disabled){transform:scale(.94)}
-.ziffer:disabled{cursor:not-allowed;opacity:.45}
-.ziffer:focus-visible{outline:2px solid var(--ak);outline-offset:2px}
+.ziffer {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 52px;
+  padding: 0;
+  font: 600 1.3rem var(--sans);
+  color: var(--txt);
+  cursor: pointer;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--schnell),
+    border-color var(--schnell),
+    opacity var(--schnell);
+}
+.ziffer:hover:not(:disabled) {
+  border-color: var(--ak);
+}
+.ziffer:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.ziffer:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.ziffer:focus-visible {
+  outline: 2px solid var(--ak);
+  outline-offset: 2px;
+}
 /* kleine Zahl in der Ecke: so oft fehlt die Ziffer noch */
-.ziffer .rest{position:absolute;top:4px;right:6px;font:400 .62rem/1 var(--mono);color:var(--mut)}
+.ziffer .rest {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font: 400 0.62rem/1 var(--mono);
+  color: var(--mut);
+}
 /* Ziffer überall untergebracht: ausgegraut, aber weiter anklickbar (zum Korrigieren) */
-.ziffer.fertig:not(:disabled){opacity:.4}
-.ziffer.radierer{color:var(--mut)}
+.ziffer.fertig:not(:disabled) {
+  opacity: 0.4;
+}
+.ziffer.radierer {
+  color: var(--mut);
+}
 
-@media (max-width:560px){
-  .ziffern{grid-template-columns:repeat(5,1fr)}
+@media (max-width: 560px) {
+  .ziffern {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 /* ---------- Werkzeuge: Notizen-Schalter + Fehler-Schalter ------- */
-.werkzeuge{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 18px;width:var(--brett)}
-.werkzeuge .knopf{padding:9px 16px;line-height:1.25}
-.werkzeuge .knopf small{font-weight:400;color:var(--mut)}
-.werkzeuge .knopf[aria-pressed="true"]{
-  border-color:var(--ak);color:var(--ak);
-  box-shadow:0 0 16px color-mix(in srgb,var(--ak) 30%,transparent);
+.werkzeuge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 18px;
+  width: var(--brett);
 }
-.werkzeuge .knopf[aria-pressed="true"] small{color:inherit;opacity:.8}
-.schalter{display:inline-flex;align-items:center;gap:10px;min-height:44px;cursor:pointer;color:var(--mut);font-size:.92rem}
-.schalter input{width:20px;height:20px;margin:0;accent-color:var(--ak);cursor:pointer}
-.schalter input:checked + span{color:var(--txt)}
+.werkzeuge .knopf {
+  padding: 9px 16px;
+  line-height: 1.25;
+}
+.werkzeuge .knopf small {
+  font-weight: 400;
+  color: var(--mut);
+}
+.werkzeuge .knopf[aria-pressed="true"] {
+  border-color: var(--ak);
+  color: var(--ak);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--ak) 30%, transparent);
+}
+.werkzeuge .knopf[aria-pressed="true"] small {
+  color: inherit;
+  opacity: 0.8;
+}
+.schalter {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  cursor: pointer;
+  color: var(--mut);
+  font-size: 0.92rem;
+}
+.schalter input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--ak);
+  cursor: pointer;
+}
+.schalter input:checked + span {
+  color: var(--txt);
+}
 
 /* ---------- Sieg-Welle ----------------------------------------
    game.js setzt --v je Zelle (Abstand zum letzten Feld); hier wird sie zur
    Animations-Verzögerung. both = vor dem Start unverändert, danach auf
    Endzustand. Bei "Bewegung reduzieren" kürzt style.css die Animation
    automatisch auf praktisch null, und game.js setzt --v auf 0. */
-.buehne.feier .zelle{animation:feier-puls .7s ease var(--v,0ms) both}
-@keyframes feier-puls{
-  0%,100%{transform:scale(1);filter:none}
-  45%{transform:scale(1.22);z-index:2;filter:brightness(1.6) saturate(1.3);
-      background-color:color-mix(in srgb,var(--ak) 45%,#0d0d1f)}
+.buehne.feier .zelle {
+  animation: feier-puls 0.7s ease var(--v, 0ms) both;
+}
+@keyframes feier-puls {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: none;
+  }
+  45% {
+    transform: scale(1.22);
+    z-index: 2;
+    filter: brightness(1.6) saturate(1.3);
+    background-color: color-mix(in srgb, var(--ak) 45%, #0d0d1f);
+  }
 }
 
 /* ---------- Dialog: die große Zeit in Akzentfarbe ---------------- */
-dialog.spiel-dialog p.gross{color:var(--ak);text-shadow:0 0 14px color-mix(in srgb,var(--ak) 50%,transparent)}
+dialog.spiel-dialog p.gross {
+  color: var(--ak);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--ak) 50%, transparent);
+}
 
 /* ---------- Schmale Handys ------------------------------------- */
-@media (max-width:480px){
-  .hud{gap:8px}
-  .hud-feld{flex:1 1 0;min-width:0;padding:10px 6px}
-  .hud-feld .label{font-size:.6rem;letter-spacing:.06em}
-  .hud-feld .wert{font-size:.85rem}
-  .buehne{padding:10px}
-  .stufen-leiste{gap:8px}
-  .stufen-leiste .knopf{flex:1 1 0;min-width:0;padding:9px 8px}
-  .spiel-kopf #neues-spiel{width:100%}
-  .werkzeuge{justify-content:flex-start}
+@media (max-width: 480px) {
+  .hud {
+    gap: 8px;
+  }
+  .hud-feld {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 10px 6px;
+  }
+  .hud-feld .label {
+    font-size: 0.6rem;
+    letter-spacing: 0.06em;
+  }
+  .hud-feld .wert {
+    font-size: 0.85rem;
+  }
+  .buehne {
+    padding: 10px;
+  }
+  .stufen-leiste {
+    gap: 8px;
+  }
+  .stufen-leiste .knopf {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 9px 8px;
+  }
+  .spiel-kopf #neues-spiel {
+    width: 100%;
+  }
+  .werkzeuge {
+    justify-content: flex-start;
+  }
 }

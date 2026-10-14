@@ -49,12 +49,12 @@ export const STUFEN = {
   schwer: { name: "Schwer", vorgaben: 26 },
 };
 
-const SPIEL = "sudoku";                    // Speicherbereich für Einstellungen und Spielstände
-const TOLERANZ = 2;                        // so viele Vorgaben über dem Ziel sind ok (siehe raetselAusVollemBrett)
-const MAX_VERSUCHE = 40;                   // so oft darf der Generator neu ansetzen, bevor er das beste Ergebnis nimmt
-const MAX_SEKUNDEN = 5999;                 // 99:59 – mehr kann "mm:ss" nicht darstellen
-const FEIER_MS_PRO_FELD = 45;              // Verzögerung der Sieg-Welle pro Feld Abstand
-const FEIER_DIALOG_MS = 1500;              // so lange läuft die Welle, dann kommt der Dialog
+const SPIEL = "sudoku"; // Speicherbereich für Einstellungen und Spielstände
+const TOLERANZ = 2; // so viele Vorgaben über dem Ziel sind ok (siehe raetselAusVollemBrett)
+const MAX_VERSUCHE = 40; // so oft darf der Generator neu ansetzen, bevor er das beste Ergebnis nimmt
+const MAX_SEKUNDEN = 5999; // 99:59 – mehr kann "mm:ss" nicht darstellen
+const FEIER_MS_PRO_FELD = 45; // Verzögerung der Sieg-Welle pro Feld Abstand
+const FEIER_DIALOG_MS = 1500; // so lange läuft die Welle, dann kommt der Dialog
 
 /** Speicher-Schlüssel der Topliste einer Stufe, z. B. "sudoku-leicht". */
 const toplisteKey = (stufe) => `${SPIEL}-${stufe}`;
@@ -114,7 +114,7 @@ export const SICHTFELDER = Array.from({ length: 81 }, (_, i) => {
    schneller als Listen zu durchsuchen. Dieselbe Technik nutzen wir bei den
    Notizen: pro Feld eine Maske der notierten Kandidaten.
    ------------------------------------------------------------ */
-const ALLE = 0b111111111;                  // alle neun Ziffern erlaubt = 511
+const ALLE = 0b111111111; // alle neun Ziffern erlaubt = 511
 
 /** ANZAHL_BITS[maske] = wie viele Bits sind gesetzt (= wie viele Kandidaten)? Einmal vorgerechnet. */
 const ANZAHL_BITS = new Uint8Array(512);
@@ -130,8 +130,8 @@ function ziffernAusMaske(maske) {
 /** Mischt eine Liste an Ort und Stelle (Fisher-Yates) und gibt sie zurück. */
 function mischen(liste, zufall) {
   for (let i = liste.length - 1; i > 0; i--) {
-    const j = Math.floor(zufall() * (i + 1));          // zufälliger Platz von 0 bis i
-    [liste[i], liste[j]] = [liste[j], liste[i]];       // tauschen
+    const j = Math.floor(zufall() * (i + 1)); // zufälliger Platz von 0 bis i
+    [liste[i], liste[j]] = [liste[j], liste[i]]; // tauschen
   }
   return liste;
 }
@@ -172,11 +172,11 @@ function mischen(liste, zufall) {
                loesung: die ERSTE gefundene Lösung (81er-Liste) oder null }
    ------------------------------------------------------------ */
 export function suche(brett, grenze = 2, zufall = null) {
-  const werte = Array.from(brett);                 // Arbeitskopie – das Original bleibt unberührt
-  const zeilenMaske = new Int16Array(9);           // vergebene Ziffern je Zeile
-  const spaltenMaske = new Int16Array(9);          // … je Spalte
-  const blockMaske = new Int16Array(9);            // … je Block
-  const offen = [];                                // Indizes aller leeren Felder
+  const werte = Array.from(brett); // Arbeitskopie – das Original bleibt unberührt
+  const zeilenMaske = new Int16Array(9); // vergebene Ziffern je Zeile
+  const spaltenMaske = new Int16Array(9); // … je Spalte
+  const blockMaske = new Int16Array(9); // … je Block
+  const offen = []; // Indizes aller leeren Felder
 
   // Schritt 1: Vorgaben in die Masken eintragen und leere Felder sammeln.
   for (let i = 0; i < 81; i++) {
@@ -217,24 +217,27 @@ export function suche(brett, grenze = 2, zufall = null) {
     // Schritt 2: das leere Feld mit den wenigsten Kandidaten finden (MRV).
     let bestePos = tiefe;
     let besteMaske = 0;
-    let besteZahl = 10;                            // größer als jede echte Kandidatenzahl
+    let besteZahl = 10; // größer als jede echte Kandidatenzahl
     for (let j = tiefe; j < offen.length; j++) {
       const i = offen[j];
       // Erlaubt = nicht in Zeile, nicht in Spalte, nicht im Block vergeben.
-      const maske = ALLE & ~(zeilenMaske[ZEILE[i]] | spaltenMaske[SPALTE[i]] | blockMaske[BLOCK[i]]);
+      const maske =
+        ALLE & ~(zeilenMaske[ZEILE[i]] | spaltenMaske[SPALTE[i]] | blockMaske[BLOCK[i]]);
       const n = ANZAHL_BITS[maske];
       if (n < besteZahl) {
         bestePos = j;
         besteMaske = maske;
         besteZahl = n;
-        if (n <= 1) break;                         // 0 = Sackgasse, 1 = erzwungen: besser wird es nicht
+        if (n <= 1) break; // 0 = Sackgasse, 1 = erzwungen: besser wird es nicht
       }
     }
-    if (besteZahl === 0) return false;             // Sackgasse → zurück zur letzten Entscheidung
+    if (besteZahl === 0) return false; // Sackgasse → zurück zur letzten Entscheidung
 
     [offen[tiefe], offen[bestePos]] = [offen[bestePos], offen[tiefe]];
     const i = offen[tiefe];
-    const zl = ZEILE[i], sp = SPALTE[i], bl = BLOCK[i];
+    const zl = ZEILE[i],
+      sp = SPALTE[i],
+      bl = BLOCK[i];
 
     // Schritt 3: die Kandidaten der Reihe nach probieren (ggf. zufällig gemischt).
     let kandidaten = ziffernAusMaske(besteMaske);
@@ -242,19 +245,19 @@ export function suche(brett, grenze = 2, zufall = null) {
 
     for (const d of kandidaten) {
       const bit = 1 << (d - 1);
-      werte[i] = d;                                // Ziffer probeweise setzen …
+      werte[i] = d; // Ziffer probeweise setzen …
       zeilenMaske[zl] |= bit;
       spaltenMaske[sp] |= bit;
       blockMaske[bl] |= bit;
 
-      if (weiter(tiefe + 1)) return true;          // … und mit dem Rest weitermachen
+      if (weiter(tiefe + 1)) return true; // … und mit dem Rest weitermachen
 
-      werte[i] = 0;                                // ging nicht: Ziffer ZURÜCKNEHMEN (das Backtracking)
+      werte[i] = 0; // ging nicht: Ziffer ZURÜCKNEHMEN (das Backtracking)
       zeilenMaske[zl] &= ~bit;
       spaltenMaske[sp] &= ~bit;
       blockMaske[bl] &= ~bit;
     }
-    return false;                                  // keine Ziffer passte → eine Ebene zurück
+    return false; // keine Ziffer passte → eine Ebene zurück
   }
 
   weiter(0);
@@ -323,22 +326,24 @@ export function raetselAusVollemBrett(loesung, ziel, zufall = Math.random) {
   const mitteBehalten = zufall() < 0.5;
 
   const paare = [];
-  for (let i = 0; i < 40; i++) paare.push([i, 80 - i]);   // 40 Paare (i = 0 … 39)
-  if (!mitteBehalten) paare.push([40]);                   // Mitte = Einzelfeld
+  for (let i = 0; i < 40; i++) paare.push([i, 80 - i]); // 40 Paare (i = 0 … 39)
+  if (!mitteBehalten) paare.push([40]); // Mitte = Einzelfeld
   mischen(paare, zufall);
 
   let verbleibend = 81;
   for (const paar of paare) {
-    if (verbleibend <= ziel) break;                       // Ziel erreicht
-    if (verbleibend - paar.length < ziel) continue;       // würde über das Ziel hinausschießen
+    if (verbleibend <= ziel) break; // Ziel erreicht
+    if (verbleibend - paar.length < ziel) continue; // würde über das Ziel hinausschießen
 
-    const gemerkt = paar.map((i) => vorgaben[i]);         // für den Fall "zurücklegen"
+    const gemerkt = paar.map((i) => vorgaben[i]); // für den Fall "zurücklegen"
     for (const i of paar) vorgaben[i] = 0;
 
     if (zaehleLoesungen(vorgaben, 2) === 1) {
-      verbleibend -= paar.length;                         // eindeutig geblieben → Löschung bleibt
+      verbleibend -= paar.length; // eindeutig geblieben → Löschung bleibt
     } else {
-      paar.forEach((i, k) => { vorgaben[i] = gemerkt[k]; }); // nicht mehr eindeutig → zurücklegen
+      paar.forEach((i, k) => {
+        vorgaben[i] = gemerkt[k];
+      }); // nicht mehr eindeutig → zurücklegen
     }
   }
   return vorgaben;
@@ -391,8 +396,8 @@ export function konflikteBerechnen(werte) {
     if (werte[i] === 0) continue;
     for (const nachbar of SICHTFELDER[i]) {
       if (werte[nachbar] === werte[i]) {
-        konflikt[i] = 1;                           // beide Beteiligten werden markiert, weil
-        break;                                     // auch der Nachbar beim Durchlauf an die Reihe kommt
+        konflikt[i] = 1; // beide Beteiligten werden markiert, weil
+        break; // auch der Nachbar beim Durchlauf an die Reihe kommt
       }
     }
   }
@@ -419,13 +424,16 @@ export function ziffernZaehlen(werte) {
  */
 export function notizenBereinigen(notizen, index, ziffer) {
   const bit = 1 << (ziffer - 1);
-  for (const nachbar of SICHTFELDER[index]) notizen[nachbar] &= ~bit;   // Bit löschen
+  for (const nachbar of SICHTFELDER[index]) notizen[nachbar] &= ~bit; // Bit löschen
 }
 
 /** Prüft, ob `liste` eine Liste aus `laenge` ganzen Zahlen zwischen min und max ist. */
 function istZahlenliste(liste, laenge, min, max) {
-  return Array.isArray(liste) && liste.length === laenge &&
-    liste.every((n) => Number.isInteger(n) && n >= min && n <= max);
+  return (
+    Array.isArray(liste) &&
+    liste.length === laenge &&
+    liste.every((n) => Number.isInteger(n) && n >= min && n <= max)
+  );
 }
 
 /**
@@ -444,15 +452,15 @@ export function spielstandPruefen(daten) {
   if (!istZahlenliste(notizen, 81, 0, ALLE)) return null;
 
   for (let i = 0; i < 81; i++) {
-    if (vorgaben[i] !== 0 && werte[i] !== vorgaben[i]) return null;   // Vorgaben müssen unverändert sein
+    if (vorgaben[i] !== 0 && werte[i] !== vorgaben[i]) return null; // Vorgaben müssen unverändert sein
   }
   const ergebnis = suche(vorgaben, 2);
-  if (ergebnis.anzahl !== 1) return null;                              // nur eindeutige Rätsel akzeptieren
+  if (ergebnis.anzahl !== 1) return null; // nur eindeutige Rätsel akzeptieren
 
   return {
     vorgaben: vorgaben.slice(),
     werte: werte.slice(),
-    notizen: notizen.map((n, i) => (werte[i] !== 0 ? 0 : n)),         // Felder mit Zahl brauchen keine Notizen
+    notizen: notizen.map((n, i) => (werte[i] !== 0 ? 0 : n)), // Felder mit Zahl brauchen keine Notizen
     loesung: ergebnis.loesung,
     ms: Number.isFinite(ms) ? Math.min(Math.max(0, ms), MAX_SEKUNDEN * 1000) : 0,
   };
@@ -471,12 +479,12 @@ export function zeitText(sekunden) {
    komplett neu angelegt. `el` sammelt die DOM-Elemente, die wir oft brauchen.
    ============================================================ */
 
-let z = null;                  // Zustand der laufenden Runde
-let stufeKey = "leicht";       // gewählte Stufe
-let notizModus = false;        // true = Ziffern werden als Notizen eingetragen
-let fehlerSofort = false;      // true = Eingaben werden mit der Lösung verglichen
-let erzeugungsNr = 0;          // zählt Erzeugungen hoch; veraltete Ergebnisse werden verworfen
-const el = {};                 // DOM-Elemente (werden in init() gefüllt)
+let z = null; // Zustand der laufenden Runde
+let stufeKey = "leicht"; // gewählte Stufe
+let notizModus = false; // true = Ziffern werden als Notizen eingetragen
+let fehlerSofort = false; // true = Eingaben werden mit der Lösung verglichen
+let erzeugungsNr = 0; // zählt Erzeugungen hoch; veraltete Ergebnisse werden verworfen
+const el = {}; // DOM-Elemente (werden in init() gefüllt)
 
 /**
  * Zustand einer Runde. phase:
@@ -490,11 +498,11 @@ function neuerZustand(phase, daten = null) {
     phase,
     vorgaben: daten ? daten.vorgaben : new Array(81).fill(0),
     loesung: daten ? daten.loesung : null,
-    werte: daten ? daten.werte : new Array(81).fill(0),       // aktuelle Ziffern (inkl. Vorgaben)
-    notizen: daten ? daten.notizen : new Array(81).fill(0),   // Bitmaske je Feld
-    auswahl: 0,                                                // Index des gewählten Feldes
-    vergangenMs: daten ? daten.ms : 0,                         // Zeit aus abgeschlossenen Zeitabschnitten
-    segmentStart: 0,                                           // Beginn des laufenden Zeitabschnitts
+    werte: daten ? daten.werte : new Array(81).fill(0), // aktuelle Ziffern (inkl. Vorgaben)
+    notizen: daten ? daten.notizen : new Array(81).fill(0), // Bitmaske je Feld
+    auswahl: 0, // Index des gewählten Feldes
+    vergangenMs: daten ? daten.ms : 0, // Zeit aus abgeschlossenen Zeitabschnitten
+    segmentStart: 0, // Beginn des laufenden Zeitabschnitts
     timerId: null,
     dialogTimerId: null,
     sekunden: 0,
@@ -530,7 +538,7 @@ const kurzePause = () => new Promise((fertig) => setTimeout(fertig, 30));
  */
 async function neuesSpiel() {
   spielAnhalten();
-  const meineNr = ++erzeugungsNr;                // wer später kommt, macht frühere Aufträge ungültig
+  const meineNr = ++erzeugungsNr; // wer später kommt, macht frühere Aufträge ungültig
   z = neuerZustand("erzeuge");
   zeichne();
   statusSagen("Erzeuge Rätsel…");
@@ -539,7 +547,7 @@ async function neuesSpiel() {
   let bestes = null;
   for (let versuch = 1; versuch <= MAX_VERSUCHE; versuch++) {
     await kurzePause();
-    if (meineNr !== erzeugungsNr) return;        // Nutzer hat inzwischen etwas anderes gewählt
+    if (meineNr !== erzeugungsNr) return; // Nutzer hat inzwischen etwas anderes gewählt
     const kandidat = erzeugeRaetselVersuch(ziel);
     if (bestes === null || kandidat.anzahlVorgaben < bestes.anzahlVorgaben) bestes = kandidat;
     if (bestes.anzahlVorgaben <= ziel + TOLERANZ) break;
@@ -552,9 +560,11 @@ async function neuesSpiel() {
     notizen: new Array(81).fill(0),
     ms: 0,
   });
-  z.auswahl = Math.max(0, z.werte.indexOf(0));   // Start: erstes leeres Feld
+  z.auswahl = Math.max(0, z.werte.indexOf(0)); // Start: erstes leeres Feld
   spielBereit();
-  statusSagen(`Neues Rätsel, Stufe ${STUFEN[stufeKey].name}. ${z.werte.filter((w) => w === 0).length} leere Felder.`);
+  statusSagen(
+    `Neues Rätsel, Stufe ${STUFEN[stufeKey].name}. ${z.werte.filter((w) => w === 0).length} leere Felder.`,
+  );
 }
 
 /**
@@ -563,7 +573,7 @@ async function neuesSpiel() {
  */
 function fortsetzenOderNeu() {
   spielAnhalten();
-  erzeugungsNr++;                                // laufende Erzeugung (falls vorhanden) verwerfen
+  erzeugungsNr++; // laufende Erzeugung (falls vorhanden) verwerfen
   const gespeichert = spielstandPruefen(lade(SPIEL, spielstandKey(stufeKey), null));
   if (!gespeichert) {
     neuesSpiel();
@@ -578,7 +588,7 @@ function fortsetzenOderNeu() {
 /** Gemeinsamer Abschluss von "neu erzeugt" und "fortgesetzt". */
 function spielBereit() {
   el.buehne.classList.remove("feier");
-  if (!document.hidden) timerStarten();          // im verborgenen Tab startet die Uhr erst beim Zurückkommen
+  if (!document.hidden) timerStarten(); // im verborgenen Tab startet die Uhr erst beim Zurückkommen
   zeichne();
   speichern();
 }
@@ -599,7 +609,7 @@ function aktuelleMs() {
 function timerStarten() {
   if (!z || z.timerId !== null) return;
   z.segmentStart = performance.now();
-  z.timerId = setInterval(timerTick, 250);       // 4× pro Sekunde, damit die Anzeige nie hängt
+  z.timerId = setInterval(timerTick, 250); // 4× pro Sekunde, damit die Anzeige nie hängt
   timerTick();
 }
 
@@ -640,26 +650,26 @@ function brettBauen() {
   el.zellen = [];
   el.zahlen = [];
   el.minis = [];
-  const sammler = document.createDocumentFragment();   // erst im Speicher bauen, dann EINMAL einfügen
+  const sammler = document.createDocumentFragment(); // erst im Speicher bauen, dann EINMAL einfügen
 
   for (let i = 0; i < 81; i++) {
     const knopf = document.createElement("button");
     knopf.type = "button";
     knopf.className = "zelle";
     knopf.dataset.index = String(i);
-    knopf.tabIndex = -1;                               // "Roving Tabindex": nur die gewählte Zelle hat 0 (siehe zeichne)
+    knopf.tabIndex = -1; // "Roving Tabindex": nur die gewählte Zelle hat 0 (siehe zeichne)
     // Dickere Linien nach Spalte 3 und 6 bzw. Zeile 3 und 6 trennen die 3×3-Blöcke.
     if (SPALTE[i] === 2 || SPALTE[i] === 5) knopf.classList.add("block-rechts");
     if (ZEILE[i] === 2 || ZEILE[i] === 5) knopf.classList.add("block-unten");
 
-    const zahl = document.createElement("span");       // die große Ziffer
+    const zahl = document.createElement("span"); // die große Ziffer
     zahl.className = "zahl";
-    const notizen = document.createElement("span");    // das 3×3-Mini-Raster für Notizen
+    const notizen = document.createElement("span"); // das 3×3-Mini-Raster für Notizen
     notizen.className = "notizen";
-    notizen.setAttribute("aria-hidden", "true");       // der Screenreader-Text steht im aria-label der Zelle
+    notizen.setAttribute("aria-hidden", "true"); // der Screenreader-Text steht im aria-label der Zelle
     const minis = [];
     for (let d = 1; d <= 9; d++) {
-      const mini = document.createElement("i");        // Position d im Raster ist fest: 1 oben links … 9 unten rechts
+      const mini = document.createElement("i"); // Position d im Raster ist fest: 1 oben links … 9 unten rechts
       notizen.append(mini);
       minis.push(mini);
     }
@@ -686,7 +696,7 @@ function ziffernleisteBauen() {
     const zahl = document.createElement("span");
     zahl.className = "ziffer-zahl";
     zahl.textContent = String(d);
-    const rest = document.createElement("span");       // "so oft fehlt die Ziffer noch"
+    const rest = document.createElement("span"); // "so oft fehlt die Ziffer noch"
     rest.className = "rest";
     rest.setAttribute("aria-hidden", "true");
     knopf.append(zahl, rest);
@@ -706,15 +716,16 @@ function zeichne() {
   const konflikte = konflikteBerechnen(z.werte);
   const sel = z.auswahl;
   const selWert = z.werte[sel];
-  const bereich = new Set(SICHTFELDER[sel]);           // Zeile, Spalte und Block der Auswahl
+  const bereich = new Set(SICHTFELDER[sel]); // Zeile, Spalte und Block der Auswahl
 
   for (let i = 0; i < 81; i++) {
     const zelle = el.zellen[i];
     const wert = z.werte[i];
     const istVorgabe = z.vorgaben[i] !== 0;
     // "Falsch" = Zahl weicht von der Lösung ab. Nur sichtbar mit dem Schalter.
-    const istFalsch = fehlerSofort && z.loesung !== null && !istVorgabe && wert !== 0 && wert !== z.loesung[i];
-    const hervorheben = z.phase !== "gewonnen";        // nach dem Sieg keine Auswahl-Hervorhebung mehr
+    const istFalsch =
+      fehlerSofort && z.loesung !== null && !istVorgabe && wert !== 0 && wert !== z.loesung[i];
+    const hervorheben = z.phase !== "gewonnen"; // nach dem Sieg keine Auswahl-Hervorhebung mehr
 
     zelle.classList.toggle("vorgabe", istVorgabe);
     zelle.classList.toggle("auswahl", hervorheben && i === sel);
@@ -806,17 +817,17 @@ function waehle(index, fokussieren = false) {
 function zifferEingeben(d) {
   if (!spielAktiv()) return;
   const i = z.auswahl;
-  if (z.vorgaben[i] !== 0) return;                     // Vorgaben sind unveränderlich
+  if (z.vorgaben[i] !== 0) return; // Vorgaben sind unveränderlich
 
   if (notizModus) {
-    if (z.werte[i] !== 0) return;                      // Auf einem Feld mit Zahl gibt es keine Notizen
-    z.notizen[i] ^= 1 << (d - 1);                      // XOR kippt genau dieses Bit: an ↔ aus
+    if (z.werte[i] !== 0) return; // Auf einem Feld mit Zahl gibt es keine Notizen
+    z.notizen[i] ^= 1 << (d - 1); // XOR kippt genau dieses Bit: an ↔ aus
   } else if (z.werte[i] === d) {
-    z.werte[i] = 0;                                    // gleiche Ziffer nochmal = wieder löschen
+    z.werte[i] = 0; // gleiche Ziffer nochmal = wieder löschen
   } else {
     z.werte[i] = d;
-    z.notizen[i] = 0;                                  // eigene Notizen sind jetzt überflüssig …
-    notizenBereinigen(z.notizen, i, d);                // … und die Ziffer fliegt aus den Notizen der Sichtfelder
+    z.notizen[i] = 0; // eigene Notizen sind jetzt überflüssig …
+    notizenBereinigen(z.notizen, i, d); // … und die Ziffer fliegt aus den Notizen der Sichtfelder
   }
   nachAenderung();
 }
@@ -858,39 +869,46 @@ function siegPruefen() {
 function gewonnen() {
   z.phase = "gewonnen";
   timerPausieren();
-  z.sekunden = Math.max(1, Math.min(MAX_SEKUNDEN, Math.floor(z.vergangenMs / 1000)));  // mindestens 1 s
-  entferne(SPIEL, spielstandKey(z.stufeKey));          // Ein gelöstes Spiel soll nicht beim Neuladen wiederkommen
+  z.sekunden = Math.max(1, Math.min(MAX_SEKUNDEN, Math.floor(z.vergangenMs / 1000))); // mindestens 1 s
+  entferne(SPIEL, spielstandKey(z.stufeKey)); // Ein gelöstes Spiel soll nicht beim Neuladen wiederkommen
   zeichne();
   statusSagen(`Gelöst in ${zeitText(z.sekunden)}.`);
 
   // Feier-Welle: Jede Zelle pulst, verzögert nach Abstand zum zuletzt gesetzten Feld.
   // Das CSS liest die Verzögerung aus --v (wie beim Minesweeper).
   const reduziert = bewegungReduziert();
-  const ox = SPALTE[z.auswahl], oy = ZEILE[z.auswahl];
+  const ox = SPALTE[z.auswahl],
+    oy = ZEILE[z.auswahl];
   for (let i = 0; i < 81; i++) {
-    const abstand = Math.hypot(SPALTE[i] - ox, ZEILE[i] - oy);   // Luftlinie → kreisförmige Welle
-    el.zellen[i].style.setProperty("--v", reduziert ? "0ms" : `${Math.round(abstand * FEIER_MS_PRO_FELD)}ms`);
+    const abstand = Math.hypot(SPALTE[i] - ox, ZEILE[i] - oy); // Luftlinie → kreisförmige Welle
+    el.zellen[i].style.setProperty(
+      "--v",
+      reduziert ? "0ms" : `${Math.round(abstand * FEIER_MS_PRO_FELD)}ms`,
+    );
   }
   el.buehne.classList.add("feier");
 
   const sekunden = z.sekunden;
   const stufe = z.stufeKey;
-  z.dialogTimerId = setTimeout(() => {
-    const dialog = gameOverDialog({
-      spiel: toplisteKey(stufe),
-      titel: "GELÖST!",
-      punkte: sekunden,
-      punkteText: zeitText(sekunden),
-      richtung: "runter",                // kürzere Zeit = besser
-      format: zeitText,                  // Topliste im Dialog als mm:ss anzeigen
-      neustart: neuesSpiel,
-    });
-    // Endet der Dialog (Knopf oder Esc), zeigen Seite und HUD die neue Topliste
-    beiDialogEnde(dialog, () => {
-      toplisteAktualisieren();
-      hudZeichnen();
-    });
-  }, reduziert ? 400 : FEIER_DIALOG_MS);
+  z.dialogTimerId = setTimeout(
+    () => {
+      const dialog = gameOverDialog({
+        spiel: toplisteKey(stufe),
+        titel: "GELÖST!",
+        punkte: sekunden,
+        punkteText: zeitText(sekunden),
+        richtung: "runter", // kürzere Zeit = besser
+        format: zeitText, // Topliste im Dialog als mm:ss anzeigen
+        neustart: neuesSpiel,
+      });
+      // Endet der Dialog (Knopf oder Esc), zeigen Seite und HUD die neue Topliste
+      beiDialogEnde(dialog, () => {
+        toplisteAktualisieren();
+        hudZeichnen();
+      });
+    },
+    reduziert ? 400 : FEIER_DIALOG_MS,
+  );
 }
 
 /**
@@ -919,13 +937,13 @@ function zweiStufig(knopf, frage, brauchtBestaetigung, aktion) {
   let timer = null;
   knopf.addEventListener("click", () => {
     if (timer === null && brauchtBestaetigung()) {
-      knopf.textContent = frage;                       // erster Klick: nachfragen
+      knopf.textContent = frage; // erster Klick: nachfragen
       knopf.classList.add("warnung");
-      timer = setTimeout(zuruecksetzen, 3500);          // nach 3,5 s zurück in den Normalzustand
+      timer = setTimeout(zuruecksetzen, 3500); // nach 3,5 s zurück in den Normalzustand
       return;
     }
     zuruecksetzen();
-    aktion();                                          // zweiter Klick (oder nichts zu verlieren): ausführen
+    aktion(); // zweiter Klick (oder nichts zu verlieren): ausführen
   });
   function zuruecksetzen() {
     clearTimeout(timer);
@@ -937,7 +955,9 @@ function zweiStufig(knopf, frage, brauchtBestaetigung, aktion) {
 
 /** Hat die Spielerin schon etwas eingetragen, das bei "Neues Spiel" verloren ginge? */
 function fortschrittVorhanden() {
-  return spielAktiv() && (z.werte.some((w, i) => w !== z.vorgaben[i]) || z.notizen.some((n) => n !== 0));
+  return (
+    spielAktiv() && (z.werte.some((w, i) => w !== z.vorgaben[i]) || z.notizen.some((n) => n !== 0))
+  );
 }
 
 function eingabeEinrichten() {
@@ -967,8 +987,8 @@ function eingabeEinrichten() {
      NICHT eingreifen dürfen. */
   document.addEventListener("keydown", (e) => {
     if (!z) return;
-    if (e.ctrlKey || e.metaKey || e.altKey) return;             // Browser-Kürzel nicht stören
-    if (document.querySelector("dialog[open]")) return;         // im Dialog tippt man Initialen
+    if (e.ctrlKey || e.metaKey || e.altKey) return; // Browser-Kürzel nicht stören
+    if (document.querySelector("dialog[open]")) return; // im Dialog tippt man Initialen
     if (e.target.closest?.("input, textarea, select, [contenteditable]")) return;
 
     if (e.key >= "1" && e.key <= "9") {
@@ -988,7 +1008,7 @@ function eingabeEinrichten() {
       else if (e.key === "ArrowRight") x++;
       else if (e.key === "ArrowUp") y--;
       else if (e.key === "ArrowDown") y++;
-      x = Math.max(0, Math.min(8, x));                          // am Rand stehen bleiben
+      x = Math.max(0, Math.min(8, x)); // am Rand stehen bleiben
       y = Math.max(0, Math.min(8, y));
       waehle(y * 9 + x, true);
     }
@@ -1021,9 +1041,9 @@ function stufenKnoepfeAktualisieren() {
 
 function stufeWaehlen(neueStufe) {
   if (!STUFEN[neueStufe] || neueStufe === stufeKey) return;
-  spielAnhalten();                                  // Stand der alten Stufe sichern – sie bleibt erhalten
+  spielAnhalten(); // Stand der alten Stufe sichern – sie bleibt erhalten
   stufeKey = neueStufe;
-  speichere(SPIEL, "stufe", stufeKey);              // beim nächsten Besuch wieder da
+  speichere(SPIEL, "stufe", stufeKey); // beim nächsten Besuch wieder da
   stufenKnoepfeAktualisieren();
   toplisteAktualisieren();
   fortsetzenOderNeu();
@@ -1066,20 +1086,30 @@ function init() {
   });
 
   // "Neues Spiel" fragt nach, wenn schon etwas eingetragen wurde.
-  zweiStufig(document.getElementById("neues-spiel"), "Wirklich neu?", fortschrittVorhanden, neuesSpiel);
+  zweiStufig(
+    document.getElementById("neues-spiel"),
+    "Wirklich neu?",
+    fortschrittVorhanden,
+    neuesSpiel,
+  );
 
   // Reset: alle drei Toplisten UND die gespeicherten Spiele löschen, dann frisch starten.
   // Die Einstellungen (Stufe, Fehler-Schalter) bleiben erhalten.
-  zweiStufig(document.getElementById("reset"), "Wirklich löschen?", () => true, () => {
-    spielAnhalten();
-    z.phase = "erzeuge";   // sperrt speichern(): Das laufende Spiel darf sich nicht selbst neu abspeichern
-    for (const key of Object.keys(STUFEN)) {
-      spielZuruecksetzen(toplisteKey(key));
-      entferne(SPIEL, spielstandKey(key));
-    }
-    toplisteAktualisieren();
-    neuesSpiel();
-  });
+  zweiStufig(
+    document.getElementById("reset"),
+    "Wirklich löschen?",
+    () => true,
+    () => {
+      spielAnhalten();
+      z.phase = "erzeuge"; // sperrt speichern(): Das laufende Spiel darf sich nicht selbst neu abspeichern
+      for (const key of Object.keys(STUFEN)) {
+        spielZuruecksetzen(toplisteKey(key));
+        entferne(SPIEL, spielstandKey(key));
+      }
+      toplisteAktualisieren();
+      neuesSpiel();
+    },
+  );
 
   toplisteAktualisieren();
   fortsetzenOderNeu();
